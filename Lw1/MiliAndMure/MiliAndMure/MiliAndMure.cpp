@@ -50,6 +50,14 @@ struct StringPair
 	}
 };
 
+struct MiliData
+{
+	std::vector<std::string> states;
+	std::vector<std::string> inSymbols;
+	std::map<StringPair, StringPair> funcTrans;
+	std::set<StringPair> endsOfTrances;
+};
+
 std::string AskFileName(const std::string& type)
 {
 	std::cout << "Enter name of file with " << type << " automata" << std::endl;
@@ -120,30 +128,18 @@ std::string GetFromLineInSymbol(const std::string line)
 	return inSymbol;
 }
 
-void GetFromLineTransient(const std::string& line, std::vector<std::string>& x, std::vector<std::string>& y,
-	std::map<StringPair, StringPair>& funcTrans, std::set<StringPair>& results)
+MiliData GetDataAboutMiliAutomata(std::istream& in)
 {
-	size_t pos = 0;
-}
-
-void FromMiliToMure()
-{
-	std::ifstream mili;
-	std::ofstream mure;
-	OpenFilesWithAutomata("Mili.txt", mili, "Mure.txt", mure);
-	//OpenFilesWithAutomata(AskFileName("mili"), mili, AskFileName("mure"), mure);
+	MiliData data;
 
 	std::string line;
-	std::getline(mili, line);
-	std::vector<std::string> s = ParseLineWithSeparator(line);
-	std::vector<std::string> x;
-	std::vector<std::string> y;
-	std::map<StringPair, StringPair> funcTrans;
-	std::set<StringPair> resultsOfTransients;
+	std::getline(in, line);
+	data.states = ParseLineWithSeparator(line);
 
-	while (std::getline(mili, line))
+	while (std::getline(in, line))
 	{
 		std::string x = GetFromLineInSymbol(line);
+		data.inSymbols.push_back(x);
 		std::vector<std::string> elts = ParseLineWithSeparator(line);
 
 		for (int i = 0; i < elts.size(); i++)
@@ -155,21 +151,59 @@ void FromMiliToMure()
 			state.append(elts[i], 0, elts[i].size() - posOfOutSymbol - 1);
 			outSymbol.append(elts[i], posOfOutSymbol + 1, elts[i].length());
 			StringPair pair{ state, outSymbol };
-			resultsOfTransients.insert(pair);
-			funcTrans[StringPair{ s[i], x }] = pair;
+			data.endsOfTrances.insert(pair);
+			data.funcTrans[StringPair{ data.states[i], x }] = pair;
 		}
 	}
 
-	for (auto func : funcTrans)
+	return data;
+}
+
+std::map<StringPair, std::string> CreateMureNodesAndWriteToFile(std::set<StringPair> endOfTrances, std::ostream& out)
+{
+	std::map<StringPair, std::string> nodes;
+	auto node = endOfTrances.begin();
+	for (int i = 0; i < endOfTrances.size(); i++)
 	{
-		std::cout << func.first.first << "!" << func.first.second << "!" << std::endl;
-		std::cout << func.second.first << "!" << func.second.second << "!" << std::endl <<std::endl;
+		nodes[*node] = "q" + std::to_string(i);
+		out << SEPARATOR << nodes[*node];
+		node++;
 	}
 
-	for (auto pair : resultsOfTransients)
+	return nodes;
+}
+
+void WriteMureTransitionToFile(MiliData data, std::map<StringPair, std::string> mureNodes, std::ostream& out)
+{
+	for (int i = 0; i < data.inSymbols.size(); i++)
 	{
-		std::cout << pair.first << " " << pair.second << std::endl;
+		out << data.inSymbols[i];
+
+		for (auto state : data.endsOfTrances)
+		{
+			out << SEPARATOR << mureNodes[data.funcTrans[StringPair{ state.first, data.inSymbols[i] }]];
+		}
+
+		out << std::endl;
 	}
+}
+
+void FromMiliToMure()
+{
+	std::ifstream mili;
+	std::ofstream mure;
+	OpenFilesWithAutomata(AskFileName("mili"), mili, AskFileName("mure"), mure);
+
+	MiliData data = GetDataAboutMiliAutomata(mili);
+
+	for (auto pair : data.endsOfTrances)
+	{
+		mure << SEPARATOR << pair.second;
+	}
+	mure << std::endl;
+	auto q = CreateMureNodesAndWriteToFile(data.endsOfTrances, mure);
+	mure << std::endl;
+	WriteMureTransitionToFile(data, q, mure);
 }
 
 void FromMureToMili()
@@ -186,7 +220,7 @@ int main()
 	{
 		std::string mode;
 		//std::cin >> mode;
-		mode = "0";
+		mode = "1";
 
 		try
 		{
