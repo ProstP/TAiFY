@@ -55,7 +55,7 @@ struct MiliData
 	std::vector<std::string> states;
 	std::vector<std::string> inSymbols;
 	std::map<StringPair, StringPair> funcTrans;
-	std::set<StringPair> endsOfTrances;
+	std::set<StringPair> uniqueStates;
 };
 
 struct MureData
@@ -159,9 +159,15 @@ MiliData GetDataAboutMiliAutomata(std::ifstream& in)
 			state.append(elts[i], 0, elts[i].size() - posOfOutSymbol - 1);
 			outSymbol.append(elts[i], posOfOutSymbol + 1, elts[i].length());
 			StringPair pair{ state, outSymbol };
-			data.endsOfTrances.insert(pair);
+			data.uniqueStates.insert(pair);
 			data.funcTrans[StringPair{ data.states[i], x }] = pair;
 		}
+	}
+
+	auto iter = data.uniqueStates.begin();
+	if (iter->first != data.states[0])
+	{
+		data.uniqueStates.insert(StringPair{ data.states[0], "-" });
 	}
 
 	return data;
@@ -187,7 +193,7 @@ void WriteMureTransitionToFile(MiliData data, std::map<StringPair, std::string> 
 	{
 		out << data.inSymbols[i];
 
-		for (auto state : data.endsOfTrances)
+		for (auto state : data.uniqueStates)
 		{
 			out << SEPARATOR << mureNodes[data.funcTrans[StringPair{ state.first, data.inSymbols[i] }]];
 		}
@@ -204,12 +210,12 @@ void FromMiliToMure()
 
 	MiliData data = GetDataAboutMiliAutomata(mili);
 
-	for (auto pair : data.endsOfTrances)
+	for (auto pair : data.uniqueStates)
 	{
 		mure << SEPARATOR << pair.second;
 	}
 	mure << std::endl;
-	auto q = CreateMureNodesAndWriteToFile(data.endsOfTrances, mure);
+	auto q = CreateMureNodesAndWriteToFile(data.uniqueStates, mure);
 	mure << std::endl;
 	WriteMureTransitionToFile(data, q, mure);
 }
@@ -248,8 +254,7 @@ void FromMureToMili()
 {
 	std::ifstream mure;
 	std::ofstream mili;
-	OpenFilesWithAutomata("Mure.txt", mure, "ToMili.txt", mili);
-	//OpenFilesWithAutomata(AskFileName("mure"), mure, AskFileName("mili"), mili);
+	OpenFilesWithAutomata(AskFileName("mure"), mure, AskFileName("mili"), mili);
 
 	MureData data = GetDataAboutMureAutomata(mure);
 
@@ -283,8 +288,7 @@ int main()
 		while (true)
 		{
 			std::string mode;
-			//std::cin >> mode;
-			mode = "1";
+			std::cin >> mode;
 
 			if (mode == "0")
 			{
