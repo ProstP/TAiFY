@@ -167,20 +167,20 @@ void MinimizateByGroup(std::map<std::string, std::vector<std::string>>& stateTra
 	{
 		std::vector<std::set<std::string>> newGroups;
 
-		std::vector<int> uniqueTransaction;
 		for (const auto& group : groups)
 		{
+			std::map<std::vector<int>, int> uniqueTransaction;
 			for (const auto& state : group)
 			{
-				if (transactions[state] != uniqueTransaction)
+				if (uniqueTransaction.count(transactions[state]) == 0)
 				{
 					std::set<std::string> set = { state };
 					newGroups.push_back(set);
-					uniqueTransaction = transactions[state];
+					uniqueTransaction[transactions[state]] = newGroups.size() - 1;
 				}
 				else
 				{
-					newGroups[newGroups.size() - 1].insert(state);
+					newGroups[uniqueTransaction[transactions[state]]].insert(state);
 				}
 			}
 		}
@@ -199,7 +199,6 @@ void MinimizateByGroup(std::map<std::string, std::vector<std::string>>& stateTra
 
 void PrintGroupsToFile(const std::vector<std::string>& inSymbols, const std::vector<std::set<std::string>>& groups, std::map<std::string, std::vector<std::string>>& stateTransactions, std::map<std::string, std::vector<std::string>> outTransactions, std::ofstream& outFile, bool isPrintOutSymbol = false)
 {
-
 	for (int i = 0; i < inSymbols.size(); i++)
 	{
 		outFile << inSymbols[i];
@@ -248,8 +247,8 @@ void MinimizateMili(const std::vector<std::string>& states, std::string line, st
 			std::string end;
 			std::string outSymbol;
 
-			end.append(ends[i], 0, ends[i].length() - posofOutSymbol - 1);
 			outSymbol.append(ends[i], posofOutSymbol + 1, ends[i].length());
+			end.append(ends[i], 0, ends[i].length() - outSymbol.length() - 1);
 
 			stateTransactions[states[i]].push_back(end);
 			outTransactions[states[i]].push_back(outSymbol);

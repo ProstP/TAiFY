@@ -156,8 +156,8 @@ MiliData GetDataAboutMiliAutomata(std::ifstream& in)
 			std::string outSymbol;
 
 			size_t posOfOutSymbol = elts[i].find('/');
-			state.append(elts[i], 0, elts[i].size() - posOfOutSymbol - 1);
 			outSymbol.append(elts[i], posOfOutSymbol + 1, elts[i].length());
+			state.append(elts[i], 0, elts[i].size() - outSymbol.length() - 1);
 			StringPair pair{ state, outSymbol };
 			data.uniqueStates.insert(pair);
 			data.funcTrans[StringPair{ data.states[i], x }] = pair;
