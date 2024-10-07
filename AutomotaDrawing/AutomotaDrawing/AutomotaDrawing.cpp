@@ -213,8 +213,22 @@ std::vector<Arrow> CreateShapesOfTransactions(Automota& automata, const std::vec
 	for (int i = 0; i < automata.states.size(); i++)
 	{
 		sf::Color color = states[i].cirle.getFillColor();
+		std::string lastState;
+		int repeatedCount = 0;
 		for (auto& transaction : automata.transitions[automata.states[i]])
 		{
+			if (lastState == transaction.end)
+			{
+				repeatedCount++;
+			}
+			else
+			{
+				lastState = transaction.end;
+				repeatedCount = 0;
+			}
+
+
+			const float offset = 10;
 			sf::Vector2f pos0(states[i].cirle.getPosition());
 			pos0.x += radius;
 			pos0.y += radius;
@@ -236,19 +250,19 @@ std::vector<Arrow> CreateShapesOfTransactions(Automota& automata, const std::vec
 				arrow.line[0].color = color;
 				arrow.line[7].position = pos0;
 				arrow.line[7].color = color;
-				arrow.line[1].position = sf::Vector2f(pos0.x - radius, pos1.y - radius / 2);
+				arrow.line[1].position = sf::Vector2f(pos0.x - radius - repeatedCount * offset, pos1.y - radius / 2 - repeatedCount * offset);
 				arrow.line[1].color = color;
-				arrow.line[2].position = sf::Vector2f(pos0.x - radius, pos1.y - radius);
+				arrow.line[2].position = sf::Vector2f(pos0.x - radius - repeatedCount * offset, pos1.y - radius - repeatedCount * offset);
 				arrow.line[2].color = color;
-				arrow.line[3].position = sf::Vector2f(pos0.x - radius / 2, pos1.y - radius * 2);
+				arrow.line[3].position = sf::Vector2f(pos0.x - radius / 2 - repeatedCount * offset, pos1.y - radius * 2 - repeatedCount * offset);
 				arrow.line[3].color = color;
-				arrow.line[4].position = sf::Vector2f(pos0.x + radius / 2, pos1.y - radius * 2);
+				arrow.line[4].position = sf::Vector2f(pos0.x + radius / 2 + repeatedCount * offset, pos1.y - radius * 2 - repeatedCount * offset);
 				arrow.line[4].color = color;
-				arrow.line[5].position = sf::Vector2f(pos0.x + radius, pos1.y - radius);
+				arrow.line[5].position = sf::Vector2f(pos0.x + radius + repeatedCount * offset, pos1.y - radius - repeatedCount * offset);
 				arrow.line[5].color = color;
-				arrow.line[6].position = sf::Vector2f(pos0.x + radius, pos1.y - radius / 2);
+				arrow.line[6].position = sf::Vector2f(pos0.x + radius + repeatedCount * offset, pos1.y - radius / 2 - repeatedCount * offset);
 				arrow.line[6].color = color;
-				arrow.text.setPosition(sf::Vector2f(pos0.x - radius / 2, pos0.y - radius * 2));
+				arrow.text.setPosition(sf::Vector2f(pos0.x - radius / 2 - repeatedCount * offset, pos0.y - radius * 2 - repeatedCount * offset));
 			}
 			else
 			{
@@ -263,19 +277,19 @@ std::vector<Arrow> CreateShapesOfTransactions(Automota& automata, const std::vec
 				arrow.line[0].color = color;
 				arrow.line[7].position = pos1;
 				arrow.line[7].color = color;
-				arrow.line[1].position = sf::Vector2f(pos0.x + (pos1.x - pos0.x) * 0.1f + 15.0f * direction * sin(angle), pos0.y + (pos1.y - pos0.y) * 0.1f - 15.0f * direction * cos(angle));
+				arrow.line[1].position = sf::Vector2f(pos0.x + (pos1.x - pos0.x) * 0.1f + 15.0f * direction * sin(angle) + (repeatedCount * offset), pos0.y + (pos1.y - pos0.y) * 0.1f - 15.0f * direction * cos(angle) - (repeatedCount * offset));
 				arrow.line[1].color = color;
-				arrow.line[2].position = sf::Vector2f(pos0.x + (pos1.x - pos0.x) * 0.2f + 25.0f * direction * sin(angle), pos0.y + (pos1.y - pos0.y) * 0.2f - 25.0f * direction * cos(angle));
+				arrow.line[2].position = sf::Vector2f(pos0.x + (pos1.x - pos0.x) * 0.2f + 25.0f * direction * sin(angle) + (repeatedCount * offset), pos0.y + (pos1.y - pos0.y) * 0.2f - 25.0f * direction * cos(angle) - (repeatedCount * offset));
 				arrow.line[2].color = color;
-				arrow.line[3].position = sf::Vector2f(pos0.x + (pos1.x - pos0.x) * 0.4f + 30.0f * direction * sin(angle), pos0.y + (pos1.y - pos0.y) * 0.4f - 30.0f * direction * cos(angle));
+				arrow.line[3].position = sf::Vector2f(pos0.x + (pos1.x - pos0.x) * 0.4f + 30.0f * direction * sin(angle) + (repeatedCount * offset), pos0.y + (pos1.y - pos0.y) * 0.4f - 30.0f * direction * cos(angle) - (repeatedCount * offset));
 				arrow.line[3].color = color;
-				arrow.line[4].position = sf::Vector2f(pos0.x + (pos1.x - pos0.x) * 0.6f + 30.0f * direction * sin(angle), pos0.y + (pos1.y - pos0.y) * 0.6f - 30.0f * direction * cos(angle));
+				arrow.line[4].position = sf::Vector2f(pos0.x + (pos1.x - pos0.x) * 0.6f + 30.0f * direction * sin(angle) + (repeatedCount * offset), pos0.y + (pos1.y - pos0.y) * 0.6f - 30.0f * direction * cos(angle) - (repeatedCount * offset));
 				arrow.line[4].color = color;
-				arrow.line[5].position = sf::Vector2f(pos0.x + (pos1.x - pos0.x) * 0.8f + 25.0f * direction * sin(angle), pos0.y + (pos1.y - pos0.y) * 0.8f - 25.0f * direction * cos(angle));
+				arrow.line[5].position = sf::Vector2f(pos0.x + (pos1.x - pos0.x) * 0.8f + 25.0f * direction * sin(angle) + (repeatedCount * offset), pos0.y + (pos1.y - pos0.y) * 0.8f - 25.0f * direction * cos(angle) - (repeatedCount * offset));
 				arrow.line[5].color = color;
-				arrow.line[6].position = sf::Vector2f(pos0.x + (pos1.x - pos0.x) * 0.9f + 15.0f * direction * sin(angle), pos0.y + (pos1.y - pos0.y) * 0.9f - 15.0f * direction * cos(angle));
+				arrow.line[6].position = sf::Vector2f(pos0.x + (pos1.x - pos0.x) * 0.9f + 15.0f * direction * sin(angle) + (repeatedCount * offset), pos0.y + (pos1.y - pos0.y) * 0.9f - 15.0f * direction * cos(angle) - (repeatedCount * offset));
 				arrow.line[6].color = color;
-				arrow.text.setPosition(sf::Vector2f(pos0.x + (pos1.x - pos0.x) * 0.45f + 30.0f * direction * sin(angle), pos0.y + (pos1.y - pos0.y) * 0.45f - 20.0f * direction * cos(angle)));
+				arrow.text.setPosition(sf::Vector2f(pos0.x + (pos1.x - pos0.x) * 0.45f + 30.0f * direction * sin(angle) + (repeatedCount * offset), pos0.y + (pos1.y - pos0.y) * 0.45f - 20.0f * direction * cos(angle)- (repeatedCount * offset)));
 			}
 
 			transactions.push_back(arrow);
@@ -303,13 +317,14 @@ void DrawTransactions(sf::RenderWindow& window, std::vector<Arrow>& arcs)
 	}
 }
 
-int main(int argc, char* argv[])
+int main()
 {
 	std::vector<State> states;
 	std::vector<Arrow> transactions;
 	try
 	{
-		std::string fileName = ParseArg(argc, argv);
+		std::string fileName;
+		std::cin >> fileName;
 		auto automata = ReadAutomataFromFile(fileName);
 
 		states = CreateShapesOfStates(automata);

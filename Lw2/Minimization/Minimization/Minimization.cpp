@@ -156,12 +156,12 @@ void MinimizateByGroup(std::map<std::string, std::vector<std::string>>& stateTra
 		}
 	}
 
-	UpdateTransactionsByGroups(stateTransactions, groups, transactions);
-
 	if (isMinimizated)
 	{
 		return;
 	}
+
+	UpdateTransactionsByGroups(stateTransactions, groups, transactions);
 
 	while (!isMinimizated)
 	{
@@ -197,35 +197,20 @@ void MinimizateByGroup(std::map<std::string, std::vector<std::string>>& stateTra
 	}
 }
 
-void PrintGroupsToFile(const std::vector<std::string>& inSymbols, const std::vector<std::set<std::string>>& groups, std::map<std::string, std::vector<std::string>>& stateTransactions, std::map<std::string, std::vector<std::string>> outTransactions, std::ofstream& outFile, bool isPrintOutSymbol = false)
+void PrintGroupTransactionToFile(const std::string& state, int i, std::map<std::string, std::vector<std::string>>& stateTransactions, const std::vector<std::set<std::string>>& groups, std::ofstream& outFile)
 {
-	for (int i = 0; i < inSymbols.size(); i++)
+	std::string end = stateTransactions[state][i];
+
+	for (int j = 0; j < groups.size(); j++)
 	{
-		outFile << inSymbols[i];
-
-		for (auto& group : groups)
+		if (groups[j].count(end) != 0)
 		{
-			std::string state = *group.begin();
-			std::string end = stateTransactions[state][i];
-
-			for (int j = 0; j < groups.size(); j++)
-			{
-				if (groups[j].count(end) != 0)
-				{
-					end = "s" + std::to_string(j);
-					break;
-				}
-			}
-
-			outFile << SEPARATOR << end;
-			if (isPrintOutSymbol)
-			{
-				outFile << "/" << outTransactions[state][i];
-			}
+			end = "s" + std::to_string(j);
+			break;
 		}
-
-		outFile << std::endl;
 	}
+
+	outFile << SEPARATOR << end;
 }
 
 void MinimizateMili(const std::vector<std::string>& states, std::string line, std::ifstream& inFile, std::ofstream& outFile)
@@ -266,7 +251,19 @@ void MinimizateMili(const std::vector<std::string>& states, std::string line, st
 	}
 	outFile << std::endl;
 
-	PrintGroupsToFile(inSymbols, groups, stateTransactions, outTransactions, outFile, true);
+	for (int i = 0; i < inSymbols.size(); i++)
+	{
+		outFile << inSymbols[i];
+
+		for (auto& group : groups)
+		{
+			std::string state = *group.begin();
+			PrintGroupTransactionToFile(state, i, stateTransactions, groups, outFile);
+			outFile << "/" << outTransactions[state][i];
+		}
+
+		outFile << std::endl;
+	}
 }
 
 void MinimizateMure(const std::vector<std::string>& outSymbols, std::string line, std::ifstream& inFile, std::ofstream& outFile)
@@ -311,7 +308,18 @@ void MinimizateMure(const std::vector<std::string>& outSymbols, std::string line
 	}
 	outFile << std::endl;
 
-	PrintGroupsToFile(inSymbols, groups, stateTransactions, outTransactions, outFile);
+	for (int i = 0; i < inSymbols.size(); i++)
+	{
+		outFile << inSymbols[i];
+
+		for (auto& group : groups)
+		{
+			std::string state = *group.begin();
+			PrintGroupTransactionToFile(state, i, stateTransactions, groups, outFile);
+		}
+
+		outFile << std::endl;
+	}
 }
 
 void MinimizateAutomata(const std::string& inFileName, const std::string& outFileName)
@@ -348,12 +356,15 @@ Args ParseArgs(int argc, char* argv[])
 	return Args{ argv[1], argv[2] };
 }
 
-int main(int argc, char* argv[])
+int main()
 {
 	try
 	{
-		auto args = ParseArgs(argc, argv);
-		MinimizateAutomata(args.inFileName, args.outFileName);
+		std::string inFileName;
+		std::string outFileName;
+		std::cin >> inFileName;
+		std::cin >> outFileName;
+		MinimizateAutomata(inFileName, outFileName);
 	}
 	catch (const std::exception& e)
 	{
