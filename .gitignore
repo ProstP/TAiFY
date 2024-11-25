@@ -6,6 +6,8 @@ output.txt
 Release/
 Debug/
 
+node_modules/
+
 # Prerequisites
 *.d
 
