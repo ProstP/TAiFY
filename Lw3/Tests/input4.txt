@@ -1,0 +1,3 @@
+S->Aa|Bb|Sa|b
+A->Sb|b
+B->Aa|b
