@@ -1,8 +1,9 @@
+var graph;
+
 const OpenAndDrawGraph = (e) => {
   const text = ReadDataFromFile(e, (text) => {
-    const graph = CreateGraph(text);
-    console.log(graph);
-    DrawGraph(graph);
+    CreateGraph(text);
+    DrawGraph();
   });
 };
 
@@ -39,10 +40,7 @@ const CreateGraph = (text) => {
     }
   }
 
-  return {
-    states,
-    edges,
-  };
+  graph = { states, edges };
 };
 
 const ReadDataFromFile = (e, processText) => {
@@ -63,7 +61,7 @@ const ReadDataFromFile = (e, processText) => {
   reader.readAsText(file);
 };
 
-const DrawGraph = (graph) => {
+const DrawGraph = () => {
   let options = {
     container: document.getElementById("cy"),
   };
@@ -98,19 +96,6 @@ const DrawGraph = (graph) => {
     layout: layoutStyle,
   };
 
-  // const elements = [
-  //   { data: { id: "a" } },
-  //   { data: { id: "b" } },
-  //   { data: { id: "s0" } },
-  //   { data: { id: "s1" } },
-  //   { data: { data: "z0", source: "a", target: "b" } },
-  //   { data: { data: "z1", source: "a", target: "a" } },
-  //   { data: { data: "z1", source: "a", target: "a" } },
-  //   { data: { source: "a", target: "s0" } },
-  //   { data: { source: "s0", target: "s1" } },
-  //   { data: { source: "s1", target: "a" } },
-  // ];
-
   let elements = [];
 
   for (i = 0; i < graph.states.length; i++) {
@@ -134,41 +119,13 @@ const DrawGraph = (graph) => {
   };
 
   const cy = cytoscape(options);
-
-  //   const cy = cytoscape({
-  //     container: document.getElementById("cy"),
-  //     elements: [
-  //       { data: { id: "a" } },
-  //       { data: { id: "b" } },
-  //       { data: { id: "a-b", source: "a", target: "b" } },
-  //     ],
-  //     style: [
-  //       {
-  //         selector: "node",
-  //         style: {
-  //           "background-color": "#666",
-  //           label: "data(id)",
-  //         },
-  //       },
-  //       {
-  //         selector: "edge",
-  //         style: {
-  //           width: 3,
-  //           "line-color": "#ccc",
-  //           "target-arrow-color": "#ccc",
-  //           "target-arrow-shape": "triangle",
-  //           "curve-style": "bezier",
-  //         },
-  //       },
-  //     ],
-  //     layout: {
-  //       name: "grid",
-  //     },
-  //   });
 };
 
 window.onload = () => {
   const input = document.getElementById("input");
 
   input.onchange = OpenAndDrawGraph;
+
+  const refershBtn = document.getElementById("refresh");
+  refershBtn.onclick = DrawGraph;
 };

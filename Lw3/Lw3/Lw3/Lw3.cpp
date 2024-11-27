@@ -288,20 +288,6 @@ int main(int argc, char* argv[])
 		NKA nka = AlphabetToNKA(alphabet);
 		DKA dka = NKAToDKA(nka);
 		WriteDKAToFile(dka, argv[2]);
-		/*
-		std::cout << "Start: " << dka.start << std::endl;
-
-		for (auto& state : dka.transactions)
-		{
-			std::cout << state.first << ":" << std::endl;
-
-			for (auto& transaction : state.second)
-			{
-				std::cout << "  " << transaction.first << "->" << transaction.second << std::endl;
-			}
-			std::cout << std::endl;
-		}
-		*/
 	}
 	catch (const std::exception& e)
 	{

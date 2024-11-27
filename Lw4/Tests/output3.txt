@@ -1,0 +1,4 @@
+;q0;q1;q2(end);q3;q4(end);q5(end)
+a;q1;q1;q4(end);q1;q4(end);q4(end)
+b;q2(end);q2(end);-;q2(end);-;-
+c;q3;q3;q5(end);q3;q5(end);q5(end)
