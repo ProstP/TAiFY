@@ -16,7 +16,7 @@ public class Program
                 {
                     automata.Handle(line[i]);
 
-                    if (automata.GetOutWord().State != StateTypes.Error)
+                    if (!string.IsNullOrEmpty(automata.GetOutWord().Word))
                     {
                         Console.WriteLine(automata.GetOutWord().State.ToString() + "-" + automata.GetOutWord().Word);
                     }

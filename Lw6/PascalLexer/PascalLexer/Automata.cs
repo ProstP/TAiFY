@@ -172,7 +172,7 @@ public class Automata
 
     private OutWord _output;
 
-    private string _currnetWord = "";
+    private string _currentWord = "";
 
     public Automata()
     {
@@ -188,46 +188,15 @@ public class Automata
     {
         _output = new(StateTypes.Error, "");
         _current.Handle(symbol);
-        _currnetWord += symbol;
+        _currentWord += symbol;
     }
-    //public void Print()
-    //{
-    //    foreach (var item in _mapOfStates)
-    //    {
-    //        Console.WriteLine(item.Key + ":");
-
-    //        State state = item.Value;
-
-    //        Console.WriteLine("  " + state.Name);
-
-    //        foreach (var transaction in state._mapToNextState)
-    //        {
-    //            Console.WriteLine("    " + transaction.Key + ":");
-
-    //            if (transaction.Value.TypeStr != null)
-    //            {
-    //                Console.WriteLine("      " + transaction.Value.TypeStr);
-    //            }
-    //            else
-    //            {
-    //                Console.WriteLine("      " + transaction.Value.Type.ToString());
-    //            }
-
-    //            Console.WriteLine("      " + transaction.Value.IsCreate);
-
-    //            Console.WriteLine();
-    //        }
-
-    //        Console.WriteLine("<->");
-    //    }
-    //}
 
     private void InitDefaultStates()
     {
         _start = new("start", this, [], new()
         {
             {SymbolTypes.DigitNotZero, new(NextStateTypes.Digit,true) },
-            {SymbolTypes.Zero, new(NextStateTypes.Real, true) },
+            {SymbolTypes.Zero, new(NextStateTypes.Digit, true) },
             {SymbolTypes.Letter, new(NextStateTypes.Identifier, true) },
             {SymbolTypes.Punctuation, new(NextStateTypes.Punctuation, true) },
             {SymbolTypes.Space, new(NextStateTypes.Start, true) },
@@ -237,7 +206,7 @@ public class Automata
             {SymbolTypes.DigitNotZero, new(NextStateTypes.Error) },
             {SymbolTypes.Zero, new(NextStateTypes.Error) },
             {SymbolTypes.Letter, new(NextStateTypes.Error) },
-            {SymbolTypes.Punctuation, new(NextStateTypes.Error) },
+            {SymbolTypes.Punctuation, new(NextStateTypes.Punctuation, true, true, StateTypes.Error) },
             {SymbolTypes.Space, new(NextStateTypes.Start, true, true, StateTypes.Error) },
         });
         _digit = new("digit", this, new()
@@ -252,11 +221,7 @@ public class Automata
             {SymbolTypes.Punctuation, new(NextStateTypes.Punctuation, true, true, StateTypes.Digit) },
             {SymbolTypes.Space, new(NextStateTypes.Start, true, true, StateTypes.Digit) },
         });
-        _real = new("real", this, new()
-        {
-            {'.', new(NextStateTypes.Real) }
-        },
-        new()
+        _real = new("real", this, [], new()
         {
             {SymbolTypes.DigitNotZero, new(NextStateTypes.Real) },
             {SymbolTypes.Zero, new(NextStateTypes.Real) },
@@ -275,7 +240,7 @@ public class Automata
         _punctuation = new("punctuation", this, [], new()
         {
             {SymbolTypes.DigitNotZero, new(NextStateTypes.Digit, true, true, StateTypes.PermationMark) },
-            {SymbolTypes.Zero, new(NextStateTypes.Real, true, true, StateTypes.PermationMark) },
+            {SymbolTypes.Zero, new(NextStateTypes.Digit, true, true, StateTypes.PermationMark) },
             {SymbolTypes.Letter, new(NextStateTypes.Identifier, true, true, StateTypes.PermationMark) },
             {SymbolTypes.Punctuation, new(NextStateTypes.Punctuation) },
             {SymbolTypes.Space, new(NextStateTypes.Start, true, true, StateTypes.PermationMark) },
@@ -305,7 +270,7 @@ public class Automata
                     map.Add(key, new("" + key, true, true, reservedWord.Length == 1 ? StateTypes.SpecialWord : StateTypes.Identifier));
                 }
 
-                _mapOfStates[word] = new(word, this, [], new()
+                _mapOfStates[word] = new(word, this, map, new()
                 {
                     {SymbolTypes.DigitNotZero, new(NextStateTypes.Identifier) },
                     {SymbolTypes.Zero, new(NextStateTypes.Identifier) },
@@ -329,7 +294,7 @@ public class Automata
                         map.Add(key, new("" + key, true, true, i == reservedWord.Length - 1 ? StateTypes.SpecialWord : StateTypes.Identifier));
                     }
 
-                    _mapOfStates[word] = new(word, this, [], new()
+                    _mapOfStates[word] = new(word, this, map, new()
                     {
                         {SymbolTypes.DigitNotZero, new(NextStateTypes.Identifier) },
                         {SymbolTypes.Zero, new(NextStateTypes.Identifier) },
@@ -365,7 +330,7 @@ public class Automata
             {
                 _start.AddTransation(punctuationMark[0], new(mark, true));
                 _identifier.AddTransation(punctuationMark[0], new(mark, true, true, StateTypes.Identifier));
-                //_real.AddTransation(punctuationMark[0], new(mark, true));
+                _real.AddTransation(punctuationMark[0], new(mark, true));
 
                 _mapOfStates[mark] = new(mark, this, [], new()
                 {
@@ -402,9 +367,27 @@ public class Automata
 
     public void Next(NextStateTypeOrString next)
     {
+        if (_currentWord.Count() > 1 && _currentWord.Last() == '.' && _current.Name == _real.Name && next.Type != NextStateTypes.Real)
+        {
+            _output = new(next.StateTypes, _currentWord.Substring(0, _currentWord.Length - 1));
+            _currentWord = ".";
+
+            if (next.TypeStr != null && next.TypeStr == ".")
+            {
+                _current = _mapOfStates[".."];
+            }
+            else
+            {
+                _current = _error;
+            }
+
+
+            return;
+        }
+
         if (next.IsCreate)
         {
-            _output = new(next.StateTypes, _currnetWord);
+            _output = new(next.StateTypes, _currentWord);
         }
 
         if (next.TypeStr != null)
@@ -422,7 +405,14 @@ public class Automata
                     _current = _start;
                     break;
                 case NextStateTypes.Digit:
-                    _current = _digit;
+                    if (_currentWord == "0" && _current.Name == _digit.Name)
+                    {
+                        _current = _error;
+                    }
+                    else
+                    {
+                        _current = _digit;
+                    }
                     break;
                 case NextStateTypes.Real:
                     _current = _real;
@@ -440,7 +430,7 @@ public class Automata
         }
         if (next.NeedClear)
         {
-            _currnetWord = "";
+            _currentWord = "";
         }
     }
 }
