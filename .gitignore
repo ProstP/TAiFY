@@ -8,6 +8,10 @@ Debug/
 
 node_modules/
 
+
+[Bb]in/
+[Oo]bj/
+
 # Prerequisites
 *.d
 
