@@ -1,0 +1,8 @@
+program example
+var
+  x integer
+  str array of integer
+begin
+  x 42
+  str x  3.14
+end
