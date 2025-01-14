@@ -187,7 +187,7 @@ public class Automata
     public void Handle(char symbol)
     {
         _output = new(StateTypes.Error, "");
-        _current.Handle(symbol);
+        _current.Handle(Char.ToLower(symbol));
         _currentWord += symbol;
     }
 
@@ -369,7 +369,7 @@ public class Automata
     {
         if (_currentWord.Count() > 1 && _currentWord.Last() == '.' && _current.Name == _real.Name && next.Type != NextStateTypes.Real)
         {
-            _output = new(next.StateTypes, _currentWord.Substring(0, _currentWord.Length - 1));
+            _output = new(StateTypes.Digit, _currentWord.Substring(0, _currentWord.Length - 1));
             _currentWord = ".";
 
             if (next.TypeStr != null && next.TypeStr == ".")
