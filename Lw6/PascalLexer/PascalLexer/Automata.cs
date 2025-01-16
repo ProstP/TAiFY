@@ -144,6 +144,7 @@ public class Automata
         '-',
         '*',
         '/',
+        ':',
         ';',
         ',',
         '(',
@@ -177,8 +178,8 @@ public class Automata
     public Automata()
     {
         InitDefaultStates();
-        InitPunctuationMarks();
-        InitReservedWords();
+        //InitPunctuationMarks();
+        //InitReservedWords();
     }
     public OutWord GetOutWord()
     {
@@ -187,7 +188,7 @@ public class Automata
     public void Handle(char symbol)
     {
         _output = new(StateTypes.Error, "");
-        _current.Handle(Char.ToLower(symbol));
+        _current.Handle(char.ToLower(symbol));
         _currentWord += symbol;
     }
 
@@ -252,7 +253,7 @@ public class Automata
 
     private void InitReservedWords()
     {
-        List<char> punctuationKeys = _start.MapToNextState.Keys.ToList();
+        //List<char> punctuationKeys = _start.MapToNextState.Keys.ToList();
 
         foreach (string reservedWord in Lexems.ReservedWords)
         {
@@ -264,13 +265,13 @@ public class Automata
                 _start.AddTransation(reservedWord[0], new(word, true));
                 _punctuation.AddTransation(reservedWord[0], new(word, true, true, StateTypes.PermationMark));
 
-                Dictionary<char, NextStateTypeOrString> map = [];
-                foreach (char key in punctuationKeys)
-                {
-                    map.Add(key, new("" + key, true, true, reservedWord.Length == 1 ? StateTypes.SpecialWord : StateTypes.Identifier));
-                }
+                //Dictionary<char, NextStateTypeOrString> map = [];
+                //foreach (char key in punctuationKeys)
+                //{
+                //    map.Add(key, new("" + key, true, true, reservedWord.Length == 1 ? StateTypes.SpecialWord : StateTypes.Identifier));
+                //}
 
-                _mapOfStates[word] = new(word, this, map, new()
+                _mapOfStates[word] = new(word, this, [], new()
                 {
                     {SymbolTypes.DigitNotZero, new(NextStateTypes.Identifier) },
                     {SymbolTypes.Zero, new(NextStateTypes.Identifier) },
@@ -287,14 +288,14 @@ public class Automata
 
                 if (!_mapOfStates.ContainsKey(word))
                 {
-                    Dictionary<char, NextStateTypeOrString> map = [];
+                    //Dictionary<char, NextStateTypeOrString> map = [];
 
-                    foreach (char key in punctuationKeys)
-                    {
-                        map.Add(key, new("" + key, true, true, i == reservedWord.Length - 1 ? StateTypes.SpecialWord : StateTypes.Identifier));
-                    }
+                    //foreach (char key in punctuationKeys)
+                    //{
+                    //    map.Add(key, new("" + key, true, true, i == reservedWord.Length - 1 ? StateTypes.SpecialWord : StateTypes.Identifier));
+                    //}
 
-                    _mapOfStates[word] = new(word, this, map, new()
+                    _mapOfStates[word] = new(word, this, [], new()
                     {
                         {SymbolTypes.DigitNotZero, new(NextStateTypes.Identifier) },
                         {SymbolTypes.Zero, new(NextStateTypes.Identifier) },

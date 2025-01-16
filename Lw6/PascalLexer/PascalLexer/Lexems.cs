@@ -53,42 +53,10 @@ public static class Lexems
         "..",
     };
 
-    public static string GetTokenType(string word)
+    public static string GetTokenTypeOfMark(string word)
     {
         switch (word)
         {
-            case "program":
-                return "PROGRAM";
-            case "var":
-                return "VAR";
-            case "begin":
-                return "BEGIN";
-            case "end":
-                return "END";
-            case "if":
-                return "IF";
-            case "then":
-                return "THEN";
-            case "else":
-                return "ELSE";
-            case "and":
-                return "AND";
-            case "or":
-                return "OR";
-            case "integer":
-                return "INTEGER";
-            case "boolean":
-                return "BOOLEAN";
-            case "char":
-                return "CHAR";
-            case "array":
-                return "ARRAY";
-            case "not":
-                return "NOT";
-            case "real":
-                return "REAL";
-            case "of":
-                return "OF";
             case "+":
                 return "PLUS";
             case "-":
@@ -129,7 +97,7 @@ public static class Lexems
                 return "DOT";
             case "//":
                 return "COMMENT";
-        case "{":
+            case "{":
                 return "COMMENT";
             case "}":
                 return "END_COMMENT";
