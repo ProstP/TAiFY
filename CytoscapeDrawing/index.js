@@ -10,19 +10,37 @@ const OpenAndDrawGraph = (e) => {
 const CreateGraph = (text) => {
   const lines = text.split("\r\n");
 
+  const isFirstOut = lines[1][0] === ";";
   const firstLine = lines[0].split(";");
-  console.log(firstLine);
+  const secondLine = isFirstOut ? lines[1].split(";") : null;
+  console.log(lines);
 
   const states = [];
 
-  for (i = 0; i < firstLine.length; i++) {
-    if (firstLine[i] !== "") {
-      states.push(firstLine[i]);
+  const lineWithStates = isFirstOut ? [...secondLine] : [...firstLine];
+  for (let i = 0; i < lineWithStates.length; i++) {
+    if (lineWithStates[i] !== "") {
+      states.push(lineWithStates[i]);
     }
   }
 
+  console.log(states);
+  console.log(lines);
+
+  const outSymbols = [];
+  if (isFirstOut) {
+    for (let i = 0; i < firstLine.length; i++) {
+      if (firstLine[i] !== "") {
+        outSymbols.push(firstLine[i]);
+      }
+    }
+  }
+
+  console.log(states);
+  console.log(lines);
+
   const edges = [];
-  for (i = 1; i < lines.length; i++) {
+  for (i = isFirstOut ? 2 : 1; i < lines.length; i++) {
     const line = lines[i].split(";");
 
     const inSymbol = line[0];
@@ -32,11 +50,29 @@ const CreateGraph = (text) => {
         continue;
       }
 
+      const from = isFirstOut
+        ? states[j - 1] + "/" + outSymbols[j - 1]
+        : states[j - 1];
+
+      const toState = isFirstOut
+        ? line[j] + "/" + outSymbols[states.indexOf(line[j])]
+        : line[j];
+
       edges.push({
         data: inSymbol,
-        from: states[j - 1],
-        to: line[j],
+        from: from,
+        to: toState,
       });
+    }
+  }
+
+  if (isFirstOut) {
+    for (let i = 0; i < states.length; i++) {
+      for (let j = 2; j < lines.length; j++) {
+        lines[j].replace(states[i], states[i] + "/" + outSymbols[i]);
+      }
+
+      states[i] = states[i] + "/" + outSymbols[i];
     }
   }
 

@@ -117,7 +117,7 @@ public class State
                 _automata.Next(_mapOfSymbols[SymbolTypes.DigitNotZero]);
             }
         }
-        else if (char.IsLetter(symbol))
+        else if (('A' <= symbol && symbol <= 'Z') || ('a' <= symbol && symbol <= 'z') || symbol == '_')
         {
             _automata.Next(_mapOfSymbols[SymbolTypes.Letter]);
         }
@@ -125,9 +125,13 @@ public class State
         {
             _automata.Next(_mapOfSymbols[SymbolTypes.Punctuation]);
         }
-        else
+        else if (symbol == ' ')
         {
             _automata.Next(_mapOfSymbols[SymbolTypes.Space]);
+        }
+        else
+        {
+            _automata.Next(new(NextStateTypes.Error));
         }
     }
     public void AddTransation(char key, NextStateTypeOrString value)
@@ -159,6 +163,12 @@ public class Automata
         '}',
         '/',
     };
+    public static char[] EndOfGroups =
+    {
+        '}',
+        ']',
+        ')',
+    };
 
     private State _start;
     private State _error;
@@ -178,7 +188,7 @@ public class Automata
     public Automata()
     {
         InitDefaultStates();
-        //InitPunctuationMarks();
+        InitPunctuationMarks();
         //InitReservedWords();
     }
     public OutWord GetOutWord()
@@ -243,7 +253,8 @@ public class Automata
             {SymbolTypes.DigitNotZero, new(NextStateTypes.Digit, true, true, StateTypes.PermationMark) },
             {SymbolTypes.Zero, new(NextStateTypes.Digit, true, true, StateTypes.PermationMark) },
             {SymbolTypes.Letter, new(NextStateTypes.Identifier, true, true, StateTypes.PermationMark) },
-            {SymbolTypes.Punctuation, new(NextStateTypes.Punctuation) },
+            {SymbolTypes.Punctuation, new(NextStateTypes.Punctuation, true, true, StateTypes.PermationMark) },
+            //{SymbolTypes.Punctuation, new(NextStateTypes.Punctuation) },
             {SymbolTypes.Space, new(NextStateTypes.Start, true, true, StateTypes.PermationMark) },
         });
 
@@ -331,14 +342,15 @@ public class Automata
             {
                 _start.AddTransation(punctuationMark[0], new(mark, true));
                 _identifier.AddTransation(punctuationMark[0], new(mark, true, true, StateTypes.Identifier));
-                _real.AddTransation(punctuationMark[0], new(mark, true));
+                _real.AddTransation(punctuationMark[0], new(mark, true, true, StateTypes.Real));
 
                 _mapOfStates[mark] = new(mark, this, [], new()
                 {
                     {SymbolTypes.DigitNotZero, new(NextStateTypes.Digit, true, true, StateTypes.PermationMark) },
                     {SymbolTypes.Zero, new(NextStateTypes.Real, true, true, StateTypes.PermationMark) },
                     {SymbolTypes.Letter, new(NextStateTypes.Identifier, true, true, StateTypes.PermationMark) },
-                    {SymbolTypes.Punctuation, new(NextStateTypes.Punctuation) },
+                    //{SymbolTypes.Punctuation, new(NextStateTypes.Punctuation) },
+                    {SymbolTypes.Punctuation, new(NextStateTypes.Punctuation, true, true, StateTypes.PermationMark) },
                     {SymbolTypes.Space, new(NextStateTypes.Start, true, true, StateTypes.PermationMark) },
                 });
             }
@@ -354,9 +366,10 @@ public class Automata
                     _mapOfStates[mark] = new(mark, this, [], new()
                     {
                         {SymbolTypes.DigitNotZero, new(NextStateTypes.Digit, true, true, StateTypes.PermationMark) },
-                        {SymbolTypes.Zero, new(NextStateTypes.Real, true, true, StateTypes.PermationMark) },
+                        {SymbolTypes.Zero, new(NextStateTypes.Digit, true, true, StateTypes.PermationMark) },
                         {SymbolTypes.Letter, new(NextStateTypes.Identifier, true, true, StateTypes.PermationMark) },
-                        {SymbolTypes.Punctuation, new(NextStateTypes.Punctuation) },
+                        //{SymbolTypes.Punctuation, new(NextStateTypes.Punctuation) },
+                        {SymbolTypes.Punctuation, new(NextStateTypes.Punctuation, true, true, StateTypes.PermationMark) },
                         {SymbolTypes.Space, new(NextStateTypes.Start, true, true, StateTypes.PermationMark) },
                     });
 
@@ -368,25 +381,32 @@ public class Automata
 
     public void Next(NextStateTypeOrString next)
     {
-        if (_currentWord.Count() > 1 && _currentWord.Last() == '.' && _current.Name == _real.Name && next.Type != NextStateTypes.Real)
+        //if (_currentWord.Length == 1 && EndOfGroups.Contains(_currentWord[0]) && next.Type == NextStateTypes.Punctuation)
+        //{
+        //    _output = new(StateTypes.PermationMark, _currentWord);
+        //    _currentWord = "";
+        //}
+        if (_currentWord.Length > 1 && _currentWord.Last() == '.' && _current.Name == _real.Name && next.Type != NextStateTypes.Real)
         {
-            _output = new(StateTypes.Digit, _currentWord.Substring(0, _currentWord.Length - 1));
-            _currentWord = ".";
-
+            //if (next.Type == NextStateTypes.Punctuation)
             if (next.TypeStr != null && next.TypeStr == ".")
             {
+                _output = new(StateTypes.Digit, _currentWord.Substring(0, _currentWord.Length - 1));
+                _currentWord = ".";
+
                 _current = _mapOfStates[".."];
+                //_current = _punctuation;
+
+                return;
             }
             else
             {
-                _current = _error;
+                _output = new(StateTypes.Error, _currentWord);
+
+                _currentWord = "";
             }
-
-
-            return;
         }
-
-        if (next.IsCreate)
+        else if (next.IsCreate)
         {
             _output = new(next.StateTypes, _currentWord);
         }
